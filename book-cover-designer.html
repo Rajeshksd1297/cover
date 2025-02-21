@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Cover Designer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .designer-container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .cover-preview {
+            width: 60%;
+            height: 900px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            position: relative;
+        }
+
+        .controls {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+        }
+
+        input[type="text"], input[type="number"], input[type="color"], select {
+            padding: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Book Cover Designer</h1>
+        <div class="designer-container">
+            <!-- Book Cover Preview -->
+            <div class="cover-preview">
+                <canvas id="coverCanvas" width="600" height="900"></canvas>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="controls">
+                <label for="textInput">Add Text</label>
+                <input type="text" id="textInput" placeholder="Enter title text" />
+
+                <label for="fontSelect">Choose Font</label>
+                <select id="fontSelect">
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Verdana">Verdana</option>
+                </select>
+
+                <label for="fontSize">Font Size</label>
+                <input type="number" id="fontSize" value="40" />
+
+                <label for="textColor">Text Color</label>
+                <input type="color" id="textColor" value="#000000" />
+
+                <label for="imageUpload">Upload Image</label>
+                <input type="file" id="imageUpload" accept="image/*" />
+
+                <button id="resetButton">Reset Design</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("coverCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const textInput = document.getElementById("textInput");
+        const fontSelect = document.getElementById("fontSelect");
+        const fontSizeInput = document.getElementById("fontSize");
+        const textColorInput = document.getElementById("textColor");
+        const imageUpload = document.getElementById("imageUpload");
+        const resetButton = document.getElementById("resetButton");
+
+        let coverImage = null;
+
+        // Set up initial canvas with trim and bleed guides
+        function drawCanvas() {
+            ctx.fillStyle = "#f0f0f0";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw trim size (actual cover area)
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(50, 50, 500, 800); // This represents trim size (5x8 inches area)
+
+            // Draw bleed area (extend a bit outside trim)
+            ctx.strokeStyle = "#888";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(30, 30, 540, 840); // This represents bleed area
+        }
+
+        // Update text on canvas
+        function updateText() {
+            const text = textInput.value;
+            const fontSize = fontSizeInput.value;
+            const fontFamily = fontSelect.value;
+            const textColor = textColorInput.value;
+
+            ctx.clearRect(50, 50, 500, 800);  // Clear previous text
+            drawCanvas(); // Redraw the background with guides
+
+            ctx.fillStyle = textColor;
+            ctx.font = `${fontSize}px ${fontFamily}`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(text, canvas.width / 2, 400); // Position text on the canvas
+        }
+
+        // Update uploaded image on canvas
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.clearRect(50, 50, 500, 800);
+                        drawCanvas();
+                        ctx.drawImage(img, 50, 50, 500, 800); // Fit image into the trim area
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Reset the design to default
+        function resetDesign() {
+            textInput.value = '';
+            fontSelect.value = 'Arial';
+            fontSizeInput.value = 40;
+            textColorInput.value = '#000000';
+            imageUpload.value = '';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCanvas();
+        }
+
+        // Initialize canvas and event listeners
+        document.addEventListener("DOMContentLoaded", () => {
+            drawCanvas();
+
+            textInput.addEventListener("input", updateText);
+            fontSelect.addEventListener("change", updateText);
+            fontSizeInput.addEventListener("input", updateText);
+            textColorInput.addEventListener("input", updateText);
+            imageUpload.addEventListener("change", handleImageUpload);
+            resetButton.addEventListener("click", resetDesign);
+        });
+    </script>
+</body>
+</html>
